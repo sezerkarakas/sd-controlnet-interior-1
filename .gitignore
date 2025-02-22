@@ -1,0 +1,34 @@
+# Python derleme dosyaları
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Sanal ortamlar
+venv/
+env/
+*.env
+
+# Cog cache ve temp dosyaları
+.cog/
+
+# Docker dosyaları
+.dockerignore
+
+# Yapılandırma dosyaları
+
+
+# Görseller
+*.jpg
+*.png
+*.jpeg
+
+# IDE dosyaları
+.vscode/
+.idea/
+
+# Log dosyaları
+*.log
+
+# Replicate cache
+.replica/
