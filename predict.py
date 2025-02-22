@@ -44,6 +44,7 @@ class Predictor(BasePredictor):
         self,
         input_image: Path = Input(description="Interior image input"),
         prompt: str = Input(description="Prompt input"),
+        negative_prompt: str = Input(description="Negative prompt input", default=""),
         sampling_steps: int = Input(
             description="How many steps to be generated", default=20, le=100, ge=1
         ),
@@ -74,7 +75,12 @@ class Predictor(BasePredictor):
         image = load_image(image)
         image = self.mlsd_detector(image)
 
-        output = self.pipe(prompt, image=image, num_inference_steps=sampling_steps)
+        output = self.pipe(
+            prompt,
+            image=image,
+            negative_prompt=negative_prompt,
+            num_inference_steps=sampling_steps,
+        )
 
         output_image = output.images[0].convert("RGB")
         output_path = "output.png"
