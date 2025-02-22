@@ -17,7 +17,6 @@ from diffusers.utils import load_image
 class Predictor(BasePredictor):
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
-        # self.model = torch.load("./weights.pth")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.mlsd_detector = MLSDdetector.from_pretrained("lllyasviel/ControlNet")
         self.controlnet = ControlNetModel.from_pretrained(
@@ -31,11 +30,11 @@ class Predictor(BasePredictor):
         self.pipe.scheduler = DDPMScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.safety_checker = None
 
-    def resize_image(self, image, max_size=1280):
+    def resize_image(self, image, max_size=2048):
         """Görseli orantıyı koruyarak max_size altına küçültür."""
         w, h = image.size
         if w > max_size or h > max_size:
-            scale = max_size / max(w, h)  # En büyük boyutu 2048'e çekiyoruz
+            scale = max_size / max(w, h)
             new_w = int(w * scale)
             new_h = int(h * scale)
             image = image.resize((new_w, new_h), Image.LANCZOS)
@@ -51,15 +50,28 @@ class Predictor(BasePredictor):
         safety_checker: bool = Input(
             description="Disable safety checker?", default=False
         ),
+        auto_resize: bool = Input(
+            description="Automatically resizes image to optimize performance and quality",
+            default=True,
+        ),
+        width: int = Input(
+            description="Width of the image if you don't want to auto resize",
+            default=None,
+        ),
+        height: int = Input(
+            description="Heigth of the image if you don't want to auto resize",
+            default=None,
+        ),
     ) -> Path:
 
-        # Safety Checker Ayarı (None = Kapalı, Default OpenAI'nin kendi fonksiyonu)
         self.pipe.safety_checker = None if safety_checker else self.pipe.safety_checker
 
         image = Image.open(input_image).convert("RGB")
-        image = self.resize_image(image)
-
-        image = load_image(image)  # ✅ Eksik olan load_image eklendi
+        if auto_resize:
+            image = self.resize_image(image)
+        elif width and height:
+            image = image.resize((width, height), Image.LANCZOS)
+        image = load_image(image)
         image = self.mlsd_detector(image)
 
         output = self.pipe(prompt, image=image, num_inference_steps=sampling_steps)
@@ -68,4 +80,4 @@ class Predictor(BasePredictor):
         output_path = "output.png"
         output_image.save(output_path)
 
-        return Path(output_path)
+        return output_path
