@@ -13,7 +13,7 @@ env/
 .cog/
 
 # Docker dosyaları
-.dockerignore
+
 
 # Yapılandırma dosyaları
 
