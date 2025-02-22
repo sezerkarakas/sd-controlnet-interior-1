@@ -86,4 +86,4 @@ class Predictor(BasePredictor):
         output_path = "output.png"
         output_image.save(output_path)
 
-        return output_path
+        return Path(output_path)
